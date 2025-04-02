@@ -1,20 +1,20 @@
 {
   "version": 2,
-  "dgSpecHash": "U+TdPJPpCzk=",
+  "dgSpecHash": "4jlmGc4SOOw=",
   "success": true,
-  "projectFilePath": "/Users/admin/RiderProjects/MyBot/MyBot/MyBot.csproj",
+  "projectFilePath": "C:\\Users\\User\\source\\repos\\fithruk\\MyBot\\MyBot.csproj",
   "expectedPackageFiles": [
-    "/Users/admin/.nuget/packages/ical.net/5.0.0-pre.41/ical.net.5.0.0-pre.41.nupkg.sha512",
-    "/Users/admin/.nuget/packages/microsoft.extensions.configuration.abstractions/8.0.0/microsoft.extensions.configuration.abstractions.8.0.0.nupkg.sha512",
-    "/Users/admin/.nuget/packages/microsoft.extensions.configuration.binder/8.0.0/microsoft.extensions.configuration.binder.8.0.0.nupkg.sha512",
-    "/Users/admin/.nuget/packages/microsoft.extensions.dependencyinjection/9.0.3/microsoft.extensions.dependencyinjection.9.0.3.nupkg.sha512",
-    "/Users/admin/.nuget/packages/microsoft.extensions.dependencyinjection.abstractions/10.0.0-preview.1.25080.5/microsoft.extensions.dependencyinjection.abstractions.10.0.0-preview.1.25080.5.nupkg.sha512",
-    "/Users/admin/.nuget/packages/microsoft.extensions.options/8.0.0/microsoft.extensions.options.8.0.0.nupkg.sha512",
-    "/Users/admin/.nuget/packages/microsoft.extensions.options.configurationextensions/8.0.0/microsoft.extensions.options.configurationextensions.8.0.0.nupkg.sha512",
-    "/Users/admin/.nuget/packages/microsoft.extensions.primitives/8.0.0/microsoft.extensions.primitives.8.0.0.nupkg.sha512",
-    "/Users/admin/.nuget/packages/nodatime/3.2.0/nodatime.3.2.0.nupkg.sha512",
-    "/Users/admin/.nuget/packages/system.text.json/8.0.5/system.text.json.8.0.5.nupkg.sha512",
-    "/Users/admin/.nuget/packages/telegram.bot/22.5.0-dev.15/telegram.bot.22.5.0-dev.15.nupkg.sha512"
+    "C:\\Users\\User\\.nuget\\packages\\ical.net\\5.0.0-pre.41\\ical.net.5.0.0-pre.41.nupkg.sha512",
+    "C:\\Users\\User\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\8.0.0\\microsoft.extensions.configuration.abstractions.8.0.0.nupkg.sha512",
+    "C:\\Users\\User\\.nuget\\packages\\microsoft.extensions.configuration.binder\\8.0.0\\microsoft.extensions.configuration.binder.8.0.0.nupkg.sha512",
+    "C:\\Users\\User\\.nuget\\packages\\microsoft.extensions.dependencyinjection\\9.0.3\\microsoft.extensions.dependencyinjection.9.0.3.nupkg.sha512",
+    "C:\\Users\\User\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\10.0.0-preview.1.25080.5\\microsoft.extensions.dependencyinjection.abstractions.10.0.0-preview.1.25080.5.nupkg.sha512",
+    "C:\\Users\\User\\.nuget\\packages\\microsoft.extensions.options\\8.0.0\\microsoft.extensions.options.8.0.0.nupkg.sha512",
+    "C:\\Users\\User\\.nuget\\packages\\microsoft.extensions.options.configurationextensions\\8.0.0\\microsoft.extensions.options.configurationextensions.8.0.0.nupkg.sha512",
+    "C:\\Users\\User\\.nuget\\packages\\microsoft.extensions.primitives\\8.0.0\\microsoft.extensions.primitives.8.0.0.nupkg.sha512",
+    "C:\\Users\\User\\.nuget\\packages\\nodatime\\3.2.0\\nodatime.3.2.0.nupkg.sha512",
+    "C:\\Users\\User\\.nuget\\packages\\system.text.json\\8.0.5\\system.text.json.8.0.5.nupkg.sha512",
+    "C:\\Users\\User\\.nuget\\packages\\telegram.bot\\22.5.0-dev.15\\telegram.bot.22.5.0-dev.15.nupkg.sha512"
   ],
   "logs": []
 }

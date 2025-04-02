@@ -34,7 +34,7 @@ public class Program
             .AddSingleton<TempUsersDB>()
             .AddSingleton<UserIntendsState>()
             .AddScoped<MessagesController>()
-            .AddScoped<CallbackQueryController>()
+            .AddScoped<CallbackQueryBaseController>()
             .AddScoped<UserRepository>()
             .AddScoped<UserService>()
             .BuildServiceProvider();

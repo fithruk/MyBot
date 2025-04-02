@@ -18,9 +18,9 @@ public static class BotHandler
         var userService = ServiceLocator.GetService<UserService>();
         UserIntendsState userIntendsState = ServiceLocator.GetService<UserIntendsState>();
         string[] routes = ["/start", "/inline", "/loadCalendarFile"];
-        string[] callbackRoutes = ["/loadCalendarFile"];
-        MessagesController MessagesController = new MessagesController(routes, botClient, userService,userIntendsState);
-        CallbackQueryController callbackQueryController = new CallbackQueryController(callbackRoutes, botClient, userService, userIntendsState);
+        string[] callbackRoutes = ["/loadCalendarFile", "/getClientInfo", "/KPI"];
+        MessagesController messagesBaseController = new MessagesController(routes, botClient, userService,userIntendsState);
+        CallbackQueryBaseController callbackQueryBaseController = new CallbackQueryBaseController(callbackRoutes, botClient, userService, userIntendsState);
         try
         {
             switch (update.Type)
@@ -33,12 +33,18 @@ public static class BotHandler
                     {
                         case MessageType.Text:
                         {
-                            MessagesController.listenRouts(message.Text.Replace("/",""), update);
+                            messagesBaseController.ListenRoutes(message.Text.Replace("/",""), update);
                             return;
                         }
                         case MessageType.Document:
                         {
-                            MessagesController.listenRouts(message.Document.MimeType.Replace("/",""), update);
+                            messagesBaseController.ListenRoutes(message.Document.MimeType.Replace("/",""), update);
+                            return;
+                        }
+                        case MessageType.Contact:
+                        {
+                            string phoneNumber = update.Message.Contact.PhoneNumber;
+                            messagesBaseController.ListenRoutes($"phone_{phoneNumber}".Replace("/",""), update);
                             return;
                         }
                     }
@@ -49,7 +55,7 @@ public static class BotHandler
                 {
                     var message = update.CallbackQuery;
                     
-                    callbackQueryController.ListenRoutes(message.Data.Replace("/",""), update);
+                    callbackQueryBaseController.ListenRoutes(message.Data.Replace("/",""), update);
                     return;
                 }
             }
