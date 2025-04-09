@@ -19,22 +19,19 @@ enum BotCommands
 
 public class MessagesController : BaseController
 {
-    private Option[] _userOptions = { new Option("А это просто кнопка", "button1") };
+    private Option[] _userOptions = { new Option("Workout Program Test", "/defineWorkoutProgram") };
     private Option[] _adminOptions = { new Option("Load data from file", "/loadUsersData"), new Option("Get info about client", "/getClientInfo"), new Option("Get KPi",  "/getKPI") };
     
-    private string[] _routes;
     private readonly ITelegramBotClient _botClient;
     private readonly UserService _userService;
     private readonly UserIntendsState _userIntendsState;
     
     public MessagesController(
-        string[] routes, 
         ITelegramBotClient botClient, 
         UserService userService,
         UserIntendsState userIntendsState
         )
     {
-        this._routes = routes;
         this._botClient = botClient;
         this._userService = userService;
         this._userIntendsState = userIntendsState;
@@ -163,7 +160,7 @@ public class MessagesController : BaseController
             case BotCommands.askPhone:
                 var replyKeyboard = new ReplyKeyboardMarkup(new[]
                 {
-                    new KeyboardButton("📱 Отправить номер") { RequestContact = true }
+                    new KeyboardButton("📱 Надіслати номер") { RequestContact = true }
                 })
                 {
                     ResizeKeyboard = true,
@@ -171,7 +168,7 @@ public class MessagesController : BaseController
                 };
                 await this._botClient.SendMessage(
                     chatId: chat.Id,
-                    text: "Пожалуйста, отправьте свой номер телефона:",
+                    text: "Будь ласка, надішліть свій номер телефону:",
                     replyMarkup: replyKeyboard
                 );
                 break;
@@ -184,7 +181,7 @@ public class MessagesController : BaseController
                 }
                 
                 this._userService.CreateBotClientUser(botClientUser.ChatId, botClientUser.Phone);
-                await this._botClient.SendMessage(chatId, "Готово Ебана рот!", replyMarkup: new ReplyKeyboardRemove());
+                await this._botClient.SendMessage(chatId, "Дякую, ви успішно авторизовані.", replyMarkup: new ReplyKeyboardRemove());
                 break;
         }
     }

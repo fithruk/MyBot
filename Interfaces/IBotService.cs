@@ -1,4 +1,4 @@
-namespace MyBot.Service;
+namespace MyBot.Interfaces;
 
 public interface IBotService
 {

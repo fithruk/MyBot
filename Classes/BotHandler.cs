@@ -16,11 +16,13 @@ public static class BotHandler
     public static async Task UpdateHandler(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
         var userService = ServiceLocator.GetService<UserService>();
+        var surveyService = ServiceLocator.GetService<SurveyService>();
+        var workoutService = ServiceLocator.GetService<WorkoutService>();
         UserIntendsState userIntendsState = ServiceLocator.GetService<UserIntendsState>();
-        string[] routes = ["/start", "/inline", "/loadCalendarFile"];
-        string[] callbackRoutes = ["/loadCalendarFile", "/getClientInfo", "/KPI"];
-        MessagesController messagesBaseController = new MessagesController(routes, botClient, userService,userIntendsState);
-        CallbackQueryBaseController callbackQueryBaseController = new CallbackQueryBaseController(callbackRoutes, botClient, userService, userIntendsState);
+       
+        MessagesController messagesBaseController = new MessagesController(botClient, userService,userIntendsState);
+        CallbackQueryBaseController callbackQueryBaseController = new CallbackQueryBaseController(botClient, userService, userIntendsState, surveyService,  workoutService);
+        
         try
         {
             switch (update.Type)
@@ -33,18 +35,18 @@ public static class BotHandler
                     {
                         case MessageType.Text:
                         {
-                            messagesBaseController.ListenRoutes(message.Text.Replace("/",""), update);
+                            await messagesBaseController.ListenRoutes(message.Text.Replace("/",""), update);
                             return;
                         }
                         case MessageType.Document:
                         {
-                            messagesBaseController.ListenRoutes(message.Document.MimeType.Replace("/",""), update);
+                            await messagesBaseController.ListenRoutes(message.Document.MimeType.Replace("/",""), update);
                             return;
                         }
                         case MessageType.Contact:
                         {
                             string phoneNumber = update.Message.Contact.PhoneNumber;
-                            messagesBaseController.ListenRoutes($"phone_{phoneNumber}".Replace("/",""), update);
+                            await messagesBaseController.ListenRoutes($"phone_{phoneNumber}".Replace("/",""), update);
                             return;
                         }
                     }

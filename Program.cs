@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MyBot.Service;
 using MyBot.Classes;
 using MyBot.Controllers;
+using MyBot.Interfaces;
 using MyBot.MyBotUsersDBJson;
 using MyBot.Repository;
 using MyBot.State;
@@ -32,11 +33,17 @@ public class Program
             .AddSingleton<ReceiverOptions>(receiverOptions)
             .AddSingleton<IBotService, Bot>()
             .AddSingleton<TempUsersDB>()
+            .AddSingleton<SurveyQuestionsDB>()
+            .AddSingleton<WorkoutProgramsDB>()
             .AddSingleton<UserIntendsState>()
             .AddScoped<MessagesController>()
             .AddScoped<CallbackQueryBaseController>()
             .AddScoped<UserRepository>()
+            .AddScoped<SurveyRepository>()
+            .AddScoped<WorkoutProgramRepository>()
             .AddScoped<UserService>()
+            .AddScoped<SurveyService>()
+            .AddScoped<WorkoutService>()
             .BuildServiceProvider();
         
         ServiceLocator.Initialize(serviceProvider);

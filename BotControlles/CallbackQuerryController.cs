@@ -16,39 +16,42 @@ enum CallbackCommands
     getClientInfo = 1,
     sendClientInfo = 2,
     getKPI = 4,
+    defineWorkoutProgram = 5,
+    proceedWithWorkoutProgram = 6,
 }
 public class CallbackQueryBaseController : BaseController
 {
+    private Dictionary<long, int> _lastMessageIds = new(); // chatId -> messageId
     
-    private Option[] _userOptions = { new Option("", "") };
-    private Option[] _adminOptions = { new Option("", "") };
-    private List<Option> _usersNamesOptions;
+    private List<Option> _userOptions = [new Option("", "")];
+    private Option[] _adminOptions = [new Option("", "")];
+    private readonly List<Option> _usersNamesOptions;
     
-    private string[] callbackRoutes = [];
+   
     private readonly ITelegramBotClient _botClient;
     private readonly UserService _userService;
     private readonly UserIntendsState _userIntendsState;
+    private readonly SurveyService _surveyService;
+    private readonly WorkoutService _workoutService;
     
-    public CallbackQueryBaseController(string[] callbackRoutes, ITelegramBotClient botClient, UserService userService, UserIntendsState userIntendsState)
+    public CallbackQueryBaseController(ITelegramBotClient botClient, UserService userService, UserIntendsState userIntendsState, SurveyService surveyService,  WorkoutService workoutService)
     {
-        this.callbackRoutes = callbackRoutes;
+      
         this._botClient = botClient;
         this._userService = userService;
         this._userIntendsState = userIntendsState;
         this._usersNamesOptions = this._userService.GetUsers().Select(u => new Option(u.Name, u.Name)).ToList();
+        this._surveyService = surveyService;
+        this._workoutService = workoutService;
     }
 
 
     protected override InlineKeyboardMarkup GetProperlyOptions(string userName)
     {
         List<InlineKeyboardButton[]> inlineKeyboardButtons = new List<InlineKeyboardButton[]>();
-        List<InlineKeyboardButton[]> userLayerButtons = new List<InlineKeyboardButton[]>()
-        {
-            new InlineKeyboardButton[]
-            {
-                InlineKeyboardButton.WithCallbackData("А это просто кнопка", "button1")
-            }
-        };
+        List<InlineKeyboardButton[]> userLayerButtons = this._userOptions
+            .Select(o => new InlineKeyboardButton[]{ InlineKeyboardButton.WithCallbackData(o.route, o.callback)})
+            .ToList();
         List<InlineKeyboardButton[]> adminLayerButtons = this._usersNamesOptions
             .Select(o => new InlineKeyboardButton[] { InlineKeyboardButton.WithCallbackData(o.route, $"user_{o.callback}") })
             .ToList();
@@ -74,13 +77,24 @@ public class CallbackQueryBaseController : BaseController
         var message = callbackQuery.Message;
         var chat = callbackQuery.Message.Chat;
         Console.WriteLine(route + " route");
-        if (callbackQuery.Data.StartsWith("user_"))
+        if (callbackQuery.Data != null && callbackQuery.Data.StartsWith("user_"))
         {
             var userName = callbackQuery.Data.Split('_')[1];
             userInfo = this._userService.GetUser(userName);
             Console.WriteLine(userName);
             route = "sendClientInfo";
         }
+        
+        if(callbackQuery.Data != null && callbackQuery.Data.StartsWith("survey_"))
+        {
+            var survey = this._surveyService.GetSurvey(chat.Id);
+            if(survey == null) return;
+            var answer = callbackQuery.Data.Split('_').Last();
+            survey.AddAnswer(answer);
+            survey.ToTheNextQuestion();
+            route = "defineWorkoutProgram";
+        }
+        
         if (!Enum.TryParse(route, true, out CallbackCommands command)) 
         {
             Console.WriteLine($"Unknown route: {route}");
@@ -101,12 +115,16 @@ public class CallbackQueryBaseController : BaseController
                  return;
              }
              case CallbackCommands.getClientInfo:
+             {
                  await this._botClient.AnswerCallbackQuery(callbackQuery.Id, "Choose client to load information."); 
                  await this._botClient.SendMessage(
                      chat.Id,
                      $"Choose user to load info",
                      replyMarkup:this.GetProperlyOptions(chat.Username));
+
+                 Console.WriteLine("Массив клиентов отправлен на клиент!");
                  return;
+             }
              
              case CallbackCommands.sendClientInfo:
              {
@@ -146,9 +164,68 @@ public class CallbackQueryBaseController : BaseController
                      document: document,
                      caption: "Отчет по CPI"
                  );
-
+                 
+                 Console.WriteLine("Отчет по CPI отправлен успешно!");
                  return;
              }
+             case CallbackCommands.defineWorkoutProgram:
+             {
+                 try
+                 {
+                     var questions = this._surveyService.GetWorkoutProgramQuestions();
+                     if (questions == null) return;
+                     
+                     this._surveyService.CreateNewSurvey(chat.Id, questions);
+                     await this._botClient.AnswerCallbackQuery(callbackQuery.Id,
+                         "Тут короче надо как то предукпредить о дальнейших действиях");
+
+                     var ids = this._surveyService.GetMessageIds(chat.Id);
+                     
+                     if(ids != null)
+                     {
+                         foreach (var messageId in ids)
+                         {
+                             try
+                             {
+                                 await this._botClient.DeleteMessage(chat.Id, messageId);
+                             }
+                             catch (Telegram.Bot.Exceptions.ApiRequestException ex) when (ex.Message.Contains("message to delete not found"))
+                             {
+                                 continue;
+                             }
+                             catch (Exception ex)
+                             {
+                                 Console.WriteLine($"Не удалось удалить сообщение {messageId}: {ex.Message}");
+                             }
+                         }
+                     };
+                    var msg_1 =  await this._botClient.SendMessage(chat.Id, this._surveyService.GetSurvey(chat.Id).GetCaption());
+                     this._userOptions.Clear();
+                     this._userOptions = this._surveyService.GetSurvey(chat.Id).GetAnswerOptions()
+                         .Select(op => new Option(op, $"survey_{op}")).ToList();
+                     var msg_2 = await this._botClient.SendMessage(chat.Id, this._surveyService.GetSurvey(chat.Id).GetCurrentQuestion(),
+                         replyMarkup: this.GetProperlyOptions(chat.Username ?? string.Empty));
+                     Console.WriteLine("Опрос в процессе, данные обрабатываются");
+                     this._surveyService.AddMessage(chat.Id, msg_1.MessageId);
+                     this._surveyService.AddMessage(chat.Id, msg_2.MessageId);
+                     return;
+                 }
+                 catch (Exception e)
+                 {
+                     Console.WriteLine(e);
+                     var program = this._workoutService.GetWorkoutProgram(this._surveyService.GetSurvey(chat.Id).GetAnswers());
+                     foreach (var str in program.WorkoutRecommendations)
+                     {
+                         Console.WriteLine(str);
+                     }
+                     Console.WriteLine("Опрос успешно закончен, идет подготовка файла");
+                     this._surveyService.DeleteSurvey(chat.Id);
+                     await this._botClient.SendMessage(chat.Id, "Помилка в логіці опитування, почніть спочатку.");
+                     
+                     throw;
+                 }
+             }
+            
         }
     }
 }

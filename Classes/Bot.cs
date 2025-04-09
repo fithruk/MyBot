@@ -1,4 +1,4 @@
-using MyBot.Service;
+using MyBot.Interfaces;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
 
