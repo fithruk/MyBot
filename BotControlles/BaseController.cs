@@ -17,6 +17,7 @@ public abstract class BaseController
             this.callback = callback;
         }
     }
-    protected  abstract InlineKeyboardMarkup GetProperlyOptions(string userName);
+    protected  abstract InlineKeyboardMarkup GetOptions(string? prefix ,Option[] options);
+    
     public  abstract Task ListenRoutes(string route, Update update);
 }

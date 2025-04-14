@@ -17,7 +17,7 @@ enum CallbackCommands
     sendClientInfo = 2,
     getKPI = 4,
     defineWorkoutProgram = 5,
-    proceedWithWorkoutProgram = 6,
+    conversation = 6,
 }
 public class CallbackQueryBaseController : BaseController
 {
@@ -46,28 +46,18 @@ public class CallbackQueryBaseController : BaseController
     }
 
 
-    protected override InlineKeyboardMarkup GetProperlyOptions(string userName)
+    protected override InlineKeyboardMarkup GetOptions(string? prefix, Option[] options)
     {
-        List<InlineKeyboardButton[]> inlineKeyboardButtons = new List<InlineKeyboardButton[]>();
-        List<InlineKeyboardButton[]> userLayerButtons = this._userOptions
-            .Select(o => new InlineKeyboardButton[]{ InlineKeyboardButton.WithCallbackData(o.route, o.callback)})
-            .ToList();
-        List<InlineKeyboardButton[]> adminLayerButtons = this._usersNamesOptions
-            .Select(o => new InlineKeyboardButton[] { InlineKeyboardButton.WithCallbackData(o.route, $"user_{o.callback}") })
-            .ToList();
+        var buttons = prefix is not null
+            ? options
+                .Select(o => new InlineKeyboardButton[]
+                    { InlineKeyboardButton.WithCallbackData(o.route, $"{prefix}_{o.callback}") })
+                .ToArray()
+            : options.Select(o => new InlineKeyboardButton[]
+                    { InlineKeyboardButton.WithCallbackData(o.route, $"{o.callback}") })
+                .ToArray();
 
-
-        if (_userService.isAdmin(userName))
-        {
-            
-            inlineKeyboardButtons.AddRange(adminLayerButtons);
-        }
-        else
-        {
-            inlineKeyboardButtons.AddRange(userLayerButtons);
-        }
-        
-        return new InlineKeyboardMarkup(inlineKeyboardButtons);
+        return new InlineKeyboardMarkup(buttons);
     }
 
     public override async Task ListenRoutes(string route,Update update)
@@ -76,7 +66,7 @@ public class CallbackQueryBaseController : BaseController
         var callbackQuery = update.CallbackQuery;
         var message = callbackQuery.Message;
         var chat = callbackQuery.Message.Chat;
-        Console.WriteLine(route + " route");
+       
         if (callbackQuery.Data != null && callbackQuery.Data.StartsWith("user_"))
         {
             var userName = callbackQuery.Data.Split('_')[1];
@@ -120,7 +110,7 @@ public class CallbackQueryBaseController : BaseController
                  await this._botClient.SendMessage(
                      chat.Id,
                      $"Choose user to load info",
-                     replyMarkup:this.GetProperlyOptions(chat.Username));
+                     replyMarkup:this.GetOptions("user",this._usersNamesOptions.ToArray()));
 
                  Console.WriteLine("Массив клиентов отправлен на клиент!");
                  return;
@@ -129,14 +119,13 @@ public class CallbackQueryBaseController : BaseController
              case CallbackCommands.sendClientInfo:
              {
                  // А тут мы добавили еще showAlert, чтобы отобразить пользователю полноценное окно
-                
+                if(!this._userService.isAdmin(chat.Username)) return;
                  if (userInfo != null)
                  {
                      string answerString = $"Имя: {userInfo.Name}\n" +
                                            $"Тренировки:\n{string.Join("\n", userInfo.DatesOfWorkouts.Select(w => $"- {w:dd.MM.yyyy HH:mm}"))}\n" +
                                            $"Всего тренировок: {userInfo.DatesOfWorkouts.Count}";
                      
-                     Console.WriteLine(answerString);
                      await this._botClient.AnswerCallbackQuery(callbackQuery.Id); // answerString ,showAlert: true
                      await this._botClient.SendMessage(chat.Id,
                          answerString
@@ -150,8 +139,8 @@ public class CallbackQueryBaseController : BaseController
              case CallbackCommands.getKPI:
              {
                  await this._botClient.AnswerCallbackQuery(callbackQuery.Id);
-                 Console.WriteLine(route + " get KPI");
-
+                 if(!this._userService.isAdmin(chat.Username)) return;
+                 
                  var events = this._userService.GetEvents();
                  var KPI = new KPIStat(events);
                  string outputPath = KPI.GetKPIMonthByMonth();
@@ -199,12 +188,12 @@ public class CallbackQueryBaseController : BaseController
                              }
                          }
                      };
-                    var msg_1 =  await this._botClient.SendMessage(chat.Id, this._surveyService.GetSurvey(chat.Id).GetCaption());
+                    var msg_1 =  await this._botClient.SendMessage(chat.Id, this._surveyService.GetSurvey(chat.Id).GetCaption(), ParseMode.Html);
                      this._userOptions.Clear();
                      this._userOptions = this._surveyService.GetSurvey(chat.Id).GetAnswerOptions()
                          .Select(op => new Option(op, $"survey_{op}")).ToList();
                      var msg_2 = await this._botClient.SendMessage(chat.Id, this._surveyService.GetSurvey(chat.Id).GetCurrentQuestion(),
-                         replyMarkup: this.GetProperlyOptions(chat.Username ?? string.Empty));
+                         replyMarkup: this.GetOptions(null,this._userOptions.ToArray()), parseMode:ParseMode.Html);
                      Console.WriteLine("Опрос в процессе, данные обрабатываются");
                      this._surveyService.AddMessage(chat.Id, msg_1.MessageId);
                      this._surveyService.AddMessage(chat.Id, msg_2.MessageId);
@@ -213,19 +202,35 @@ public class CallbackQueryBaseController : BaseController
                  catch (Exception e)
                  {
                      Console.WriteLine(e);
-                     var program = this._workoutService.GetWorkoutProgram(this._surveyService.GetSurvey(chat.Id).GetAnswers());
-                     foreach (var str in program.WorkoutRecommendations)
-                     {
-                         Console.WriteLine(str);
-                     }
+                     var wpFilePath = this._workoutService.PrepareWorkoutProgramFile(this._surveyService.GetSurvey(chat.Id).GetAnswers());
                      Console.WriteLine("Опрос успешно закончен, идет подготовка файла");
+                     if (wpFilePath == null)
+                     {
+                         await this._botClient.SendMessage(chat.Id, "Помилка в логіці опитування, почніть спочатку.");
+                         this._surveyService.DeleteSurvey(chat.Id);
+                         return;
+                     };
+                    if (!File.Exists(wpFilePath)) File.Create(wpFilePath);
+                     await using Stream stream = File.OpenRead(wpFilePath);
+                     InputFileStream document = new InputFileStream(stream, $"{wpFilePath.Split('.')[1]}.txt");
+
+                     await this._botClient.SendDocument(
+                         chatId: chat.Id,
+                         document: document,
+                         caption: "Програма тренувань готова"
+                     );
+                 
+                     Console.WriteLine("Программа тренировок отправлена успешно!");
                      this._surveyService.DeleteSurvey(chat.Id);
-                     await this._botClient.SendMessage(chat.Id, "Помилка в логіці опитування, почніть спочатку.");
-                     
                      throw;
+                     
                  }
              }
-            
+             case CallbackCommands.conversation:
+             {
+                 Console.WriteLine(callbackQuery.Data + " conversation");
+                 return;
+             }
         }
     }
 }

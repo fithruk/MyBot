@@ -18,7 +18,7 @@ public class Bot : IBotService
     public async Task StartAsync()
     {
         using var cts = new CancellationTokenSource();
-        
+        await _botClient.DeleteWebhook(cancellationToken: cts.Token);
          _botClient.StartReceiving(BotHandler.UpdateHandler, BotHandler.ErrorHandler, _receiverOptions, cts.Token); // Запускаем бота
         
         var myBot = await _botClient.GetMe(); // Создаем переменную, в которую помещаем информацию о нашем боте.
