@@ -89,8 +89,9 @@ public class MessagesController : BaseController
 
         if (route.StartsWith("phone") )
         {
+            string name = user.FirstName + " " + user.LastName;
             string phone = route.Split('_').Last();
-            botClientUser = new BotClientUser(chatId,  phone);
+            botClientUser = new BotClientUser(chatId,  phone, name); 
             route = "registrationClientUser";
         }
         
@@ -200,7 +201,7 @@ public class MessagesController : BaseController
                     break;
                 }
                 
-                this._userService.CreateBotClientUser(botClientUser.ChatId, botClientUser.Phone);
+                this._userService.CreateBotClientUser(botClientUser.ChatId, botClientUser.Phone, botClientUser.Name);
                 await this._botClient.SendMessage(chatId, "Дякую, ви успішно авторизовані.", replyMarkup: new ReplyKeyboardRemove());
                 break;
             case BotCommands.conversationsWithTrainer:

@@ -1,16 +1,17 @@
 ﻿using MyBot.Classes;
+using MyBot.Interfaces;
 using MyBot.Repository;
 
 namespace MyBot.Service;
 
-public class SurveyService
+public class WorkoutSurveyService : ISurveyService<WorkoutProgramQuestion>
 {
     private readonly SurveyRepository _surveyRepository;
 
     private Dictionary<long, Survey> _surveys = new();
     private Dictionary<long, List<int>> _messageIds = new();
 
-    public SurveyService(SurveyRepository surveyRepository)
+    public WorkoutSurveyService(SurveyRepository surveyRepository)
     {
         _surveyRepository = surveyRepository;
     }
@@ -33,7 +34,7 @@ public class SurveyService
     }
     
     
-    public List<WorkoutProgramQuestion>? GetWorkoutProgramQuestions()
+    public List<WorkoutProgramQuestion>? GetQuestions()
     {
         return this._surveyRepository.GetWorkoutProgramQuestions();
     }

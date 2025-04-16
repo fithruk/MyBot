@@ -19,5 +19,8 @@ public class SurveyRepository
         return this._surveyQuestions.GetWorkoutProgramQuestions();
     }
 
-   
+    public List<TrainerConversationQuestions>? GetTrainerConversationQuestions()
+    {
+        return this._surveyQuestions.GetTrainerConversationQuestions();
+    }
 }

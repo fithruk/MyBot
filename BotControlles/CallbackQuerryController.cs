@@ -31,10 +31,10 @@ public class CallbackQueryBaseController : BaseController
     private readonly ITelegramBotClient _botClient;
     private readonly UserService _userService;
     private readonly UserIntendsState _userIntendsState;
-    private readonly SurveyService _surveyService;
+    private readonly WorkoutSurveyService _surveyService;
     private readonly WorkoutService _workoutService;
     
-    public CallbackQueryBaseController(ITelegramBotClient botClient, UserService userService, UserIntendsState userIntendsState, SurveyService surveyService,  WorkoutService workoutService)
+    public CallbackQueryBaseController(ITelegramBotClient botClient, UserService userService, UserIntendsState userIntendsState, WorkoutSurveyService surveyService,  WorkoutService workoutService)
     {
       
         this._botClient = botClient;
@@ -161,7 +161,7 @@ public class CallbackQueryBaseController : BaseController
              {
                  try
                  {
-                     var questions = this._surveyService.GetWorkoutProgramQuestions();
+                     var questions = this._surveyService.GetQuestions();
                      if (questions == null) return;
                      
                      this._surveyService.CreateNewSurvey(chat.Id, questions);
@@ -228,8 +228,21 @@ public class CallbackQueryBaseController : BaseController
              }
              case CallbackCommands.conversation:
              {
-                 Console.WriteLine(callbackQuery.Data + " conversation");
-                 return;
+                 try
+                 {
+                     Console.WriteLine(callbackQuery.Data + " conversation");
+                    
+                     var questions = this._surveyService.GetQuestions();
+                     if (questions == null) return;
+                     
+                     return;
+                 }
+                 catch (Exception e)
+                 {
+                     Console.WriteLine(e);
+                     throw;
+                 }
+                 
              }
         }
     }

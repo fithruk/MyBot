@@ -16,7 +16,7 @@ public static class BotHandler
     public static async Task UpdateHandler(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
         var userService = ServiceLocator.GetService<UserService>();
-        var surveyService = ServiceLocator.GetService<SurveyService>();
+        var surveyService = ServiceLocator.GetService<WorkoutSurveyService>();
         var workoutService = ServiceLocator.GetService<WorkoutService>();
         UserIntendsState userIntendsState = ServiceLocator.GetService<UserIntendsState>();
        

@@ -47,9 +47,9 @@ public class UserService
         return this._userRepository.GetEvents();
     }
 
-    public void CreateBotClientUser(long chatId, string phone)
+    public void CreateBotClientUser(long chatId, string phone, string name)
     {
-        this._userRepository.CreateBotClientUser(chatId, phone);
+        this._userRepository.CreateBotClientUser(chatId, phone, name);
     }
 
     public bool IsClientUserExist(long chatId)

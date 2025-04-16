@@ -1,5 +1,5 @@
 ﻿using MyBot.Interfaces;
-
+using MyBot.Classes;
 namespace MyBot.Classes;
 
 // Questions in array, string[]
@@ -11,27 +11,27 @@ namespace MyBot.Classes;
 
 public class Survey : ISurvey
 {
-//"чоловік", "жінка"
-    private Dictionary<string, string?> _transliteratedKeys = new Dictionary<string, string?>() {
-        { "чоловік", "male" },
-        { "11-14", "11-14" },
-        { "15-18", "15-18" },
-        { "19-28", "19-28" },
-        { "29-39", "29-39" },
-        { "40 +", "40 +" },
-        { "жінка", "female" },
-        { "15-19", "15-19" },
-        { "20-29", "20-29" },
-        { "30-35", "30-35" },
-        { "36-44", "36-44" },
-        { "44 +", "44 +" },
-        {"Я поки що не змогла.", "WK_test_false"},
-        {"Так. Я це змогла зробити.", "WK_test_true"},
-        {"Я поки що не зміг це зробити.", "WK_test_false"},
-        {"Я зміг це зробити.", "WK_test_true"},
-        {"НІ. Довжини пальців забракло.", "Genetic_test_false"},
-        {"ТАК. Можу.", "Genetic_test_true"},
-    };
+    // private Dictionary<string, string?> _transliteratedKeys = new Dictionary<string, string?>() {
+    //     { "чоловік", "male" },
+    //     { "11-14", "11-14" },
+    //     { "15-18", "15-18" },
+    //     { "19-28", "19-28" },
+    //     { "29-39", "29-39" },
+    //     { "40 +", "40 +" },
+    //     { "жінка", "female" },
+    //     { "15-19", "15-19" },
+    //     { "20-29", "20-29" },
+    //     { "30-35", "30-35" },
+    //     { "36-44", "36-44" },
+    //     { "44 +", "44 +" },
+    //     {"Я поки що не змогла.", "WK_test_false"},
+    //     {"Так. Я це змогла зробити.", "WK_test_true"},
+    //     {"Я поки що не зміг це зробити.", "WK_test_false"},
+    //     {"Я зміг це зробити.", "WK_test_true"},
+    //     {"НІ. Довжини пальців забракло.", "Genetic_test_false"},
+    //     {"ТАК. Можу.", "Genetic_test_true"},
+    // };
+    
     
     
     private bool _disposed = false;
@@ -93,7 +93,7 @@ public class Survey : ISurvey
 
     public void AddAnswer(string answer)
     {
-        var properlyKey = this._transliteratedKeys[answer];
+        var properlyKey = SurveyKeys.GetWkProgramQuestionsKeys()[answer];
         if (properlyKey != null) this._answers?.Add(properlyKey);
     }
 
@@ -103,7 +103,7 @@ public class Survey : ISurvey
        GC.SuppressFinalize(this);
     }
 
-    public virtual void Dispose(bool disposing)
+    public void Dispose(bool disposing)
     {
         if(!this._disposed) return;
 

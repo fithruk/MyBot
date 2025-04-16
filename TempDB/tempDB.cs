@@ -92,9 +92,9 @@ public class TempUsersDB
         return _eventsArray;
     }
 
-    public void CreateNewClientUser(long chatId, string phone)
+    public void CreateNewClientUser(long chatId, string phone, string name)
     {
-        var newClient = new BotClientUser(chatId, phone);
+        var newClient = new BotClientUser(chatId, phone, name);
         string path = @"C:\Users\User\source\repos\fithruk\MyBot\TempDB\botClientUsers.json";
 
 

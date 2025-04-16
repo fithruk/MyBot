@@ -42,7 +42,7 @@ public class Program
             .AddScoped<SurveyRepository>()
             .AddScoped<WorkoutProgramRepository>()
             .AddScoped<UserService>()
-            .AddScoped<SurveyService>()
+            .AddScoped<WorkoutSurveyService>()
             .AddScoped<WorkoutService>()
             .BuildServiceProvider();
         
